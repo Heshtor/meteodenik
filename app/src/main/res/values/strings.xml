@@ -1,3 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">MeteoDenik</string>
+    <string name="uvodni_text">Martin Hruboš</string>
+    <string name="text_po_kliknuti">Dnes bylo 21 °C a jasno.</string>
+    <string name="akce_zmen_text">Zapsat dnešní počasí</string>
 </resources>
