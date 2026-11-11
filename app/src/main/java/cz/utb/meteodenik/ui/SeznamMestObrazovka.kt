@@ -1,6 +1,7 @@
 package cz.utb.meteodenik.ui
 
 import android.content.Intent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,6 +13,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cz.utb.meteodenik.DetailMestaActivity
@@ -22,19 +25,27 @@ import cz.utb.meteodenik.model.UKAZKOVA_MESTA
 @Composable
 fun SeznamMestObrazovka() {
     val context = LocalContext.current          // Context pro startActivity – na začátku funkce
+    val pocet = UKAZKOVA_MESTA.size
 
     Scaffold { insety ->
         Column(modifier = Modifier
             .padding(insety)
             .padding(16.dp)) {
+
             Text(
-                text = stringResource(R.string.app_name),
+                text = stringResource(
+                    R.string.seznam_titulek_pocet,
+                    pluralStringResource(R.plurals.pocet_zaznamu, pocet, pocet)
+                ),
                 style = MaterialTheme.typography.headlineSmall
             )
+
+            PolohaKarta(onPolohaPovolena = {})
 
             UKAZKOVA_MESTA.forEach { mesto ->
                 Column(
                     modifier = Modifier
+                        .background(colorResource(R.color.pozadi_karty))
                         .fillMaxWidth()
                         .clickable {
                             val intent = Intent(context, DetailMestaActivity::class.java).apply {
