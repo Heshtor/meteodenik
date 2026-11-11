@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MeteoDenik</string>
+    <string name="app_name">Weather Diary</string>
     <string name="seznam_titulek_pocet">My cities — %1$s</string>
     <string name="otevri_detail">Open city detail</string>
     <plurals name="pocet_zaznamu">
@@ -8,6 +8,7 @@
         <item quantity="other">%1$d records</item>
     </plurals>
     <string name="mesto_nezname">Unknown city</string>
+    <string name="detail_souhrn">It is %2$.1f °C in %1$s right now</string>
     <string name="sdilet_zaznam">Share record</string>
     <string name="sdileny_text">%1$s: %2$.1f °C — recorded in Weather Diary</string>
     <string name="teplota_format">%1$.1f °C</string>

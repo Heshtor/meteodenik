@@ -24,9 +24,9 @@ fun DetailObrazovka(mesto: String, teplota: Double) {
             Text(text = mesto, style = MaterialTheme.typography.headlineMedium)
             Text(
                 text = if (teplota.isNaN()) {
-                    stringResource(R.string.teplota_chybi)        // extra chybělo
+                    stringResource(R.string.teplota_chybi) // extra chybělo
                 } else {
-                    stringResource(R.string.teplota_format, teplota)
+                    stringResource(R.string.detail_souhrn, mesto, teplota) // „Zlín má právě 21,4 °C“
                 }
             )
             SdiletTlacitko(mesto = mesto, teplota = teplota)
