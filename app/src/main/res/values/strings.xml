@@ -23,6 +23,8 @@
     <string name="poloha_vysvetleni">Přibližnou polohu potřebujeme jen k tomu, abychom vám hned nabídli počasí ve městě, kde právě jste. Nikam ji neposíláme a neukládáme ji.</string>
     <string name="poloha_pokracovat">Rozumím, pokračovat</string>
     <string name="poloha_povolena">Poloha je povolena</string>
+    <string name="poloha_souradnice">Jste přibližně na %1$.4f, %2$.4f</string>
+    <string name="poloha_neznama">Polohu se zjistit nepodařilo. Město si můžete vybrat ze seznamu.</string>
     <string name="poloha_bez_opravneni">Bez přístupu k poloze funguje vše ostatní. Město si vyberte ze seznamu, nebo polohu povolte v nastavení aplikace.</string>
     <string name="otevrit_nastaveni">Otevřít nastavení aplikace</string>
 </resources>

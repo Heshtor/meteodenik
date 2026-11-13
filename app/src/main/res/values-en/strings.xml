@@ -18,6 +18,8 @@
     <string name="poloha_vysvetleni">We only need your approximate location to show the weather for the city you are in right now. We never send it anywhere and we do not store it.</string>
     <string name="poloha_pokracovat">Got it, continue</string>
     <string name="poloha_povolena">Location access granted</string>
+    <string name="poloha_souradnice">You are approximately at %1$.4f, %2$.4f</string>
+    <string name="poloha_neznama">We could not determine your location. Pick a city from the list instead.</string>
     <string name="poloha_bez_opravneni">Everything else works without location access. Pick a city from the list, or allow location in the app settings.</string>
     <string name="otevrit_nastaveni">Open app settings</string>
 </resources>
