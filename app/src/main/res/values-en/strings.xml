@@ -22,4 +22,12 @@
     <string name="poloha_neznama">We could not determine your location. Pick a city from the list instead.</string>
     <string name="poloha_bez_opravneni">Everything else works without location access. Pick a city from the list, or allow location in the app settings.</string>
     <string name="otevrit_nastaveni">Open app settings</string>
+
+    <string name="mesta_titulek">My cities</string>
+    <string name="mesta_prazdno">No cities yet. Add the first one.</string>
+    <string name="mesto_pole_label">City name</string>
+    <string name="mesto_pridat">Add</string>
+    <string name="mesto_teplota">%1$.1f °C</string>
+    <string name="mesto_teplota_neznama">Temperature not known yet</string>
+    <string name="mesto_avatar_popis">City badge</string>
 </resources>

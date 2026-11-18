@@ -27,4 +27,12 @@
     <string name="poloha_neznama">Polohu se zjistit nepodařilo. Město si můžete vybrat ze seznamu.</string>
     <string name="poloha_bez_opravneni">Bez přístupu k poloze funguje vše ostatní. Město si vyberte ze seznamu, nebo polohu povolte v nastavení aplikace.</string>
     <string name="otevrit_nastaveni">Otevřít nastavení aplikace</string>
+
+    <string name="mesta_titulek">Moje města</string>
+    <string name="mesta_prazdno">Zatím tu není žádné město. Přidejte první.</string>
+    <string name="mesto_pole_label">Název města</string>
+    <string name="mesto_pridat">Přidat</string>
+    <string name="mesto_teplota">%1$.1f °C</string>
+    <string name="mesto_teplota_neznama">Teplotu zatím neznáme</string>
+    <string name="mesto_avatar_popis">Značka města</string>
 </resources>
