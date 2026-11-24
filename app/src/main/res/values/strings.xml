@@ -41,4 +41,15 @@
     <string name="vizitka_ukazka_jmeno">Martin Hruboš</string>
     <string name="vizitka_ukazka_obor">Softwarové inženýrství, 1. ročník navazujícího studia</string>
     <string name="vizitka_ukazka_email">m_hrubos@utb.cz</string>
+
+    <string name="mesto_duplikat">Toto město už v seznamu je</string>
+    <string name="mesto_smazat_popis">Odebrat město %1$s ze seznamu</string>
+    <string name="mesto_smazat">Smazat</string>
+
+    <plurals name="mesta_pocet">
+        <item quantity="one">%1$d město</item>
+        <item quantity="few">%1$d města</item>
+        <item quantity="many">%1$d města</item>
+        <item quantity="other">%1$d měst</item>
+    </plurals>
 </resources>

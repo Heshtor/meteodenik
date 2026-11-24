@@ -25,6 +25,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -36,8 +37,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -46,19 +49,192 @@ import cz.utb.meteodenik.R
 import cz.utb.meteodenik.model.Mesto
 import cz.utb.meteodenik.ui.theme.MeteoDenikTheme
 
+/* ---------- 1. STAVOVÁ funkce: jediné místo v souboru, kde je stav ---------- */
+
+@Composable
+fun MestaObrazovka(modifier: Modifier = Modifier) {
+    var novyNazev by rememberSaveable { mutableStateOf("") }
+    var jeDuplikat by rememberSaveable { mutableStateOf(false) }
+    // List<Mesto> do Bundlu bez vlastního Saveru nejde — přiznaný kompromis,
+    // který v lekci 08 vyřeší ViewModel.
+    var mesta by remember { mutableStateOf(ukazkovaMesta) }
+
+    MestaObsah(
+        mesta = mesta,
+        novyNazev = novyNazev,
+        jeDuplikat = jeDuplikat,
+        onNovyNazevChange = { novaHodnota ->
+            novyNazev = novaHodnota
+            jeDuplikat = false            // chybu ruší už samo psaní
+        },
+        onPridatMesto = {
+            val nazev = novyNazev.trim()
+            val jeJiVSeznamu = mesta.any { it.nazev.equals(nazev, ignoreCase = true) }
+            when {
+                nazev.isEmpty() -> Unit                       // tlačítko je v tomto stavu vyšedlé
+                jeJiVSeznamu -> jeDuplikat = true
+                else -> {
+                    mesta = mesta + Mesto(
+                        id = (mesta.maxOfOrNull { it.id } ?: 0) + 1,
+                        nazev = nazev,
+                        teplotaC = null
+                    )
+                    novyNazev = ""
+                }
+            }
+        },
+        onSmazatMesto = { id -> mesta = mesta.filterNot { it.id == id } },
+        modifier = modifier
+    )
+}
+
+/* ---------- 2. BEZSTAVOVÁ obrazovka: jde do @Preview i do testu ---------- */
+
+@OptIn(ExperimentalMaterial3Api::class)   // TopAppBar je v Material 3 experimentální
+@Composable
+fun MestaObsah(
+    mesta: List<Mesto>,
+    novyNazev: String,
+    jeDuplikat: Boolean,
+    onNovyNazevChange: (String) -> Unit,
+    onPridatMesto: () -> Unit,
+    onSmazatMesto: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = { Text(text = stringResource(R.string.mesta_titulek)) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp)
+        ) {
+            Spacer(modifier = Modifier.height(8.dp))
+
+            PridatMestoRadek(
+                nazev = novyNazev,
+                jeChyba = jeDuplikat,
+                onNazevChange = onNovyNazevChange,
+                onPridat = onPridatMesto
+            )
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+            Text(
+                text = pluralStringResource(R.plurals.mesta_pocet, mesta.size, mesta.size),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.semantics { heading() }
+            )
+
+            MestaSeznam(mesta = mesta, onSmazatMesto = onSmazatMesto)
+        }
+    }
+}
+
+/* ---------- 3. Řádek pro přidání ---------- */
+
+@Composable
+fun PridatMestoRadek(
+    nazev: String,
+    jeChyba: Boolean,
+    onNazevChange: (String) -> Unit,
+    onPridat: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        // Alignment.Top, ne CenterVertically: při zapnuté chybě pole vyroste
+        // o podpůrný text a tlačítko by se jinak posunulo dolů.
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Top
+    ) {
+        OutlinedTextField(
+            value = nazev,
+            onValueChange = onNazevChange,
+            label = { Text(stringResource(R.string.mesto_pole_label)) },
+            singleLine = true,
+            isError = jeChyba,
+            supportingText = if (jeChyba) {
+                { Text(stringResource(R.string.mesto_duplikat)) }
+            } else {
+                null
+            },
+            modifier = Modifier.weight(1f)
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Button(
+            onClick = onPridat,
+            enabled = nazev.isNotBlank(),
+            modifier = Modifier.padding(top = 8.dp)
+        ) {
+            Text(text = stringResource(R.string.mesto_pridat))
+        }
+    }
+}
+
+/* ---------- 4. Seznam ---------- */
+
+@Composable
+fun MestaSeznam(
+    mesta: List<Mesto>,
+    onSmazatMesto: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    if (mesta.isEmpty()) {
+        Text(
+            text = stringResource(R.string.mesta_prazdno),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = modifier.padding(vertical = 32.dp)
+        )
+    } else {
+        LazyColumn(
+            modifier = modifier.fillMaxSize(),
+            contentPadding = PaddingValues(vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(
+                items = mesta,
+                key = { mesto -> mesto.id }        // stabilní identita, ne pozice
+            ) { mesto ->
+                MestoKarta(
+                    mesto = mesto,
+                    onSmazat = { onSmazatMesto(mesto.id) }
+                )
+            }
+        }
+    }
+}
+
+/* ---------- 5. Karta ---------- */
+
 @Composable
 fun MestoKarta(
     mesto: Mesto,
+    onSmazat: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // stringResource() je @Composable — uvnitr Modifier.semantics { } ji zavolat nelze,
+    // proto se text nacte tady a do lambdy jde uz jen hotova hodnota.
+    val smazatPopis = stringResource(R.string.mesto_smazat_popis, mesto.nazev)
+
     Card(modifier = modifier.fillMaxWidth()) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(start = 16.dp, top = 8.dp, end = 8.dp, bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(64.dp)
+                    .size(48.dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.secondaryContainer)
                     .semantics { contentDescription = mesto.nazev },
@@ -90,9 +266,21 @@ fun MestoKarta(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+
+            // TextButton má cíl dotyku 48 dp; Text s clickable by ho neměl.
+            TextButton(
+                onClick = onSmazat,
+                modifier = Modifier.semantics {
+                    contentDescription = smazatPopis
+                }
+            ) {
+                Text(text = stringResource(R.string.mesto_smazat))
+            }
         }
     }
 }
+
+/* ---------- 6. Ukázková data a náhledy ---------- */
 
 internal val ukazkovaMesta = listOf(
     Mesto(id = 1, nazev = "Zlín", teplotaC = 18.5),
@@ -105,36 +293,23 @@ internal val ukazkovaMesta = listOf(
 @Composable
 private fun MestoKartaPreview() {
     MeteoDenikTheme {
-        MestoKarta(mesto = ukazkovaMesta.first(), modifier = Modifier.padding(16.dp))
+        MestoKarta(mesto = ukazkovaMesta.first(), {}, modifier = Modifier.padding(16.dp))
     }
 }
 
-
+@Preview(showBackground = true)
 @Composable
-fun PridatMestoRadek(
-    nazev: String,
-    onNazevChange: (String) -> Unit,
-    onPridat: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        OutlinedTextField(
-            value = nazev,
-            onValueChange = onNazevChange,
-            label = { Text(stringResource(R.string.mesto_pole_label)) },
-            singleLine = true,
-            modifier = Modifier.weight(1f)
-        )
-        Spacer(modifier = Modifier.width(12.dp))
-        Button(
-            onClick = onPridat,
-            enabled = nazev.isNotBlank()
-        ) {
-            Text(text = stringResource(R.string.mesto_pridat))
-        }
+private fun MestaSeznamPreview1() {
+    MeteoDenikTheme {
+        MestaSeznam(ukazkovaMesta, {})
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun MestaSeznamPreview2() {
+    MeteoDenikTheme {
+        MestaSeznam(emptyList(), {})
     }
 }
 
@@ -143,137 +318,25 @@ fun PridatMestoRadek(
 private fun PridatMestoRadekPreview() {
     MeteoDenikTheme {
         Column(modifier = Modifier.padding(16.dp)) {
-            PridatMestoRadek(nazev = "", onNazevChange = {}, onPridat = {})
+            PridatMestoRadek(nazev = "", jeChyba = true, onNazevChange = {}, onPridat = {})
             Spacer(modifier = Modifier.height(16.dp))
-            PridatMestoRadek(nazev = "Zlín", onNazevChange = {}, onPridat = {})
+            PridatMestoRadek(nazev = "Zlín", jeChyba = false, onNazevChange = {}, onPridat = {})
         }
     }
-}
-
-
-@Composable
-fun MestaSeznam(
-    mesta: List<Mesto>,
-    modifier: Modifier = Modifier
-) {
-    if (mesta.isEmpty()) {
-        Text(
-            text = stringResource(R.string.mesta_prazdno),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = modifier.padding(vertical = 32.dp)
-        )
-    } else {
-        LazyColumn(
-            modifier = modifier.fillMaxSize(),
-            contentPadding = PaddingValues(vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(
-                items = mesta,
-                key = { mesto -> mesto.id }
-            ) { mesto ->
-                MestoKarta(mesto = mesto)
-            }
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun MestaSeznamPreview1() {
-    MeteoDenikTheme {
-        MestaSeznam(ukazkovaMesta)
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun MestaSeznamPreview2() {
-    MeteoDenikTheme {
-        MestaSeznam(emptyList())
-    }
-}
-
-
-@OptIn(ExperimentalMaterial3Api::class)   // TopAppBar je v Material 3 stále experimentální
-@Composable
-fun MestaObsah(
-    mesta: List<Mesto>,
-    novyNazev: String,
-    onNovyNazevChange: (String) -> Unit,
-    onPridatMesto: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = {
-            TopAppBar(
-                title = { Text(text = stringResource(R.string.mesta_titulek)) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            )
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp)
-        ) {
-            Spacer(modifier = Modifier.height(8.dp))
-            PridatMestoRadek(
-                nazev = novyNazev,
-                onNazevChange = onNovyNazevChange,
-                onPridat = onPridatMesto
-            )
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-            MestaSeznam(mesta = mesta)
-        }
-    }
-}
-
-@Composable
-fun MestaObrazovka(modifier: Modifier = Modifier) {
-    // Jediné místo v celé obrazovce, kde bydlí stav.
-    // V lekci 08 se tyto řádky přesunou do ViewModelu; komponenty se nezmění.
-    var novyNazev by rememberSaveable { mutableStateOf("") }
-    var mesta by remember { mutableStateOf(ukazkovaMesta) }
-
-    MestaObsah(
-        mesta = mesta,
-        novyNazev = novyNazev,
-        onNovyNazevChange = { novyNazev = it },
-        onPridatMesto = {
-            val nazev = novyNazev.trim()
-            if (nazev.isNotEmpty()) {
-                mesta = mesta + Mesto(
-                    id = (mesta.maxOfOrNull { it.id } ?: 0) + 1,
-                    nazev = nazev,
-                    teplotaC = null
-                )
-                novyNazev = ""
-            }
-        },
-        modifier = modifier
-    )
 }
 
 @Preview(name = "Obrazovka — světlá", showBackground = true)
-@Preview(
-    name = "Obrazovka — tmavá",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(name = "Obrazovka — tmavá", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun MestaObsahPreview() {
     MeteoDenikTheme {
         MestaObsah(
             mesta = ukazkovaMesta,
             novyNazev = "Otrokovice",
+            jeDuplikat = false,
             onNovyNazevChange = {},
-            onPridatMesto = {}
+            onPridatMesto = {},
+            onSmazatMesto = {}
         )
     }
 }
@@ -285,8 +348,25 @@ private fun MestaObsahPrazdnaPreview() {
         MestaObsah(
             mesta = emptyList(),
             novyNazev = "",
+            jeDuplikat = false,
             onNovyNazevChange = {},
-            onPridatMesto = {}
+            onPridatMesto = {},
+            onSmazatMesto = {}
+        )
+    }
+}
+
+@Preview(name = "Obrazovka — duplikát", showBackground = true)
+@Composable
+private fun MestaObsahChybaPreview() {
+    MeteoDenikTheme {
+        MestaObsah(
+            mesta = ukazkovaMesta,
+            novyNazev = "zlín",
+            jeDuplikat = true,
+            onNovyNazevChange = {},
+            onPridatMesto = {},
+            onSmazatMesto = {}
         )
     }
 }

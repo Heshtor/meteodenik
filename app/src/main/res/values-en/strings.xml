@@ -30,4 +30,13 @@
     <string name="mesto_teplota">%1$.1f °C</string>
     <string name="mesto_teplota_neznama">Temperature not known yet</string>
     <string name="mesto_avatar_popis">City badge</string>
+
+    <string name="mesto_duplikat">This city is already in the list</string>
+    <string name="mesto_smazat_popis">Remove %1$s from the list</string>
+    <string name="mesto_smazat">Delete</string>
+
+    <plurals name="mesta_pocet">
+        <item quantity="one">%1$d city</item>
+        <item quantity="other">%1$d cities</item>
+    </plurals>
 </resources>
